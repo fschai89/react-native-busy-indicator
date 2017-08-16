@@ -6,7 +6,8 @@ import {
   Text,
   DeviceEventEmitter,
   ActivityIndicator,
-  Keyboard
+  Keyboard,
+  Platform
 } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -58,23 +59,26 @@ class BusyIndicator extends React.Component {
     };
   }
 
-  componentWillMount () {
-    this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this.changeKeyboardSpace.bind(this));
-    this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.removeKeyboardSpace.bind(this));
-  }
-
   componentDidMount () {
     this.emitter = DeviceEventEmitter.addListener('changeLoadingEffect', this.changeLoadingEffect.bind(this));
+    if(Platform.OS === 'ios') {
+      this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this.changeKeyboardSpace.bind(this));
+      this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this.removeKeyboardSpace.bind(this)); 
+    }           
   }
 
   componentWillUnmount() {
     this.emitter.remove();
-    this.keyboardDidShowListener.remove();
-    this.keyboardDidHideListener.remove();
+    if(Platform.OS === 'ios') {
+      this.keyboardDidShowListener.remove();
+      this.keyboardDidHideListener.remove();
+    }    
   }
 
   changeKeyboardSpace(frames){
-    if (!frames.endCoordinates) return;
+    if (!frames.endCoordinates) {
+      return;
+    }
     this.setState({
       keyboardSpace: frames.endCoordinates.height
     });
